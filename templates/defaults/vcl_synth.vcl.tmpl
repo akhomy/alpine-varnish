@@ -1,0 +1,7 @@
+sub vcl_synth {
+  if (resp.status == 401) {
+    set resp.status = 401;
+    set resp.http.WWW-Authenticate = "Basic";
+    return(deliver);
+  }
+}

@@ -1,0 +1,66 @@
+vcl 4.0;
+
+include "includes/backend.vcl";
+
+import std;
+import geoip;
+
+{{ if getenv "VARNISH_IMPORT_MODULES" }}
+{{ $modules := split (getenv "VARNISH_IMPORT_MODULES") "," }}
+{{ range $modules }}import {{ . }};
+{{ end }}{{ end }}
+
+acl allowed_monitors {
+  /* Simple access control list for allowing item purge for the self machine */
+  "127.0.0.1"/32; // We can use'"localhost";' instead
+  "10.0.0.0/8";
+}
+
+sub vcl_recv {
+      if (req.http.CF-IPCountry) {
+        set req.http.X-Country-Code = req.http.CF-IPCountry;
+    } elseif (req.http.X-Real-IP) {
+        set req.http.X-Country-Code = geoip.country_code(req.http.X-Real-IP);
+    } else {
+        set req.http.X-Country-Code = geoip.country_code(client.ip);
+    }
+
+    if (req.http.X-Country-Code) {
+        {{ $usd_codes := (getenv "VARNISH_CURRENCY_USD_COUNTRY_CODES" "US|AS|BQ|IO|EC|SV|GU|HT|MH|FM|MP|PA|PW|PR|TL|TC|UM|VG|VI") }}
+        {{ $eur_codes := (getenv "VARNISH_CURRENCY_EUR_COUNTRY_CODES" "AD|AT|BE|CY|EE|FI|FR|GF|TF|DE|GP|GR|VA|IE|IT|LV|LT|LU|MT|MQ|YT|MC|ME|NL|PT|RE|BL|MF|PM|SM|SK|SI|ES|CE|CH|AX") }}
+
+        if (req.http.X-Country-Code ~ "{{ $usd_codes }}") {
+            set req.http.X-Currency = "USD";
+        } else if (req.http.X-Country-Code ~ "{{ $eur_codes }}") {
+            set req.http.X-Currency = "EUR";
+        }
+    }
+    if (req.http.X-Forwarded-For) {
+        set req.http.X-Forwarded-For = req.http.X-Forwarded-For + ", " + client.ip;
+    } else {
+        set req.http.X-Forwarded-For = client.ip;
+    }
+
+    if ( req.url == "/healthz"
+       && client.ip ~ allowed_monitors
+       && ( req.method == "OPTIONS" || req.method == "GET" )
+     ) {
+       return (synth(200, "OK"));
+       set req.http.Connection = "close";
+     }
+}
+
+include "includes/purge.vcl";
+include "includes/static.vcl";
+include "includes/mobile.vcl";
+
+include "defaults/vcl_recv.vcl";
+
+include "preset.vcl";
+
+include "defaults/vcl_hash.vcl";
+include "defaults/vcl_pipe.vcl";
+include "defaults/vcl_backend_response.vcl";
+include "defaults/vcl_backend_error.vcl";
+include "defaults/vcl_deliver.vcl";
+include "defaults/vcl_synth.vcl";
