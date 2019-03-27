@@ -2,9 +2,7 @@ ARG BASE_IMAGE_TAG=latest
 
 FROM akhomy/alpine-base:${BASE_IMAGE_TAG}
 
-ARG VARNISH_VER
-
-ENV VARNISH_VER="${VARNISH_VER}" \
+ENV VARNISH_VER=6.0.3 \
     LIBVMOD_GEOIP="1.0.3"
 
 COPY patches /tmp/patches/
