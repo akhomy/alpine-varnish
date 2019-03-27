@@ -310,6 +310,6 @@ default params values:
     delay_seconds 0
 ```
 
-## Copy Info
+## Copyright Info
 
 Forked from the [wodby/varnish](https://github.com/wodby/varnish) image.
