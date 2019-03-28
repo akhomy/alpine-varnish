@@ -5,6 +5,7 @@ FROM akhomy/alpine-base:${BASE_IMAGE_TAG}
 ARG VARNISH_VER=6.0.3
 ENV VARNISH_VER=${VARNISH_VER} \
     LIBVMOD_GEOIP="1.0.3"
+ENV GOTPL_VER="0.1.5"
 
 COPY patches /tmp/patches/
 COPY GeoIP.dat.gz /usr/share/GeoIP/
@@ -26,7 +27,9 @@ RUN set -ex; \
         ncurses-libs \
         pcre \
         pwgen; \
-    \
+        gotpl_url="https://github.com/wodby/gotpl/releases/download/${GOTPL_VER}/gotpl-alpine-linux-amd64-${GOTPL_VER}.tar.gz"; \
+        wget -qO- "${gotpl_url}" | tar xz -C /usr/local/bin; \
+        \
     apk --update --no-cache -t .varnish-build-deps add \
         attr \
         autoconf \
