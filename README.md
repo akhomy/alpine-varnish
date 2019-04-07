@@ -123,6 +123,8 @@ Supported tags and respective `Dockerfile` links:
 | `VARNISHD_SECONDARY_STORAGE`               |                            | See example below                               |
 | `VARNISHD_SECRET_FILE`                     | `/etc/varnish/secret`      |                                                 |
 | `VARNISHD_VCL_SCRIPT`                      | `/etc/varnish/default.vcl` |                                                 |
+| `VARNISH_BLOCKED_URLS`                     |                            |    Used to block URLs by specific regex.        |
+
 
 ###### `VARNISH_MOBILE_USER_AGENT`:
 
