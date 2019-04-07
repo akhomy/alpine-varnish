@@ -9,6 +9,12 @@ sub vcl_recv {
         unset req.http.Authorization;
     {{ end }}
 
+    # Closes blocked URLs.
+    {{ $blocked_urls := (getenv "VARNISH_BLOCKED_URLS") }}
+    if (req.url ~ "{{ $blocked_urls }}" && req.http.X-Varnish-Login != "true") {
+        return(synth(403, "Access forbidden"));
+    }
+
     # Only cache GET and HEAD requests (pass through POST requests).
     if (req.method != "GET" && req.method != "HEAD") {
         set req.http.X-VC-Cacheable = "NO:Request method:" + req.method;

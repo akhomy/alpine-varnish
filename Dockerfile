@@ -6,6 +6,7 @@ ARG VARNISH_VER=6.0.3
 ENV VARNISH_VER=${VARNISH_VER} \
     LIBVMOD_GEOIP="1.0.3"
 ENV GOTPL_VER="0.1.5"
+ENV PROMETHEUS_VARNISH_EXPORTER_VERSION="1.4.1"
 
 COPY patches /tmp/patches/
 COPY GeoIP.dat.gz /usr/share/GeoIP/
@@ -30,6 +31,12 @@ RUN set -ex; \
         gotpl_url="https://github.com/wodby/gotpl/releases/download/${GOTPL_VER}/gotpl-alpine-linux-amd64-${GOTPL_VER}.tar.gz"; \
         wget -qO- "${gotpl_url}" | tar xz -C /usr/local/bin; \
         \
+        curl -L https://github.com/jonnenauha/prometheus_varnish_exporter/releases/download/${PROMETHEUS_VARNISH_EXPORTER_VERSION}/prometheus_varnish_exporter-${PROMETHEUS_VARNISH_EXPORTER_VERSION}.linux-amd64.tar.gz \
+        | tar --strip-components=1 -xz -C /usr/bin && \
+        chmod +x /usr/bin/prometheus_varnish_exporter && \
+        mkdir /lib64 && \
+        ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2; \
+    rm -rf /var/cache/apk/*; \
     apk --update --no-cache -t .varnish-build-deps add \
         attr \
         autoconf \
@@ -156,7 +163,7 @@ RUN set -ex; \
     rm -rf /tmp/*; \
     rm -rf /var/cache/apk/*
 
-EXPOSE 6081 6082
+EXPOSE 6081 6082 9131
 
 VOLUME /var/lib/varnish
 

@@ -4,4 +4,8 @@ sub vcl_synth {
     set resp.http.WWW-Authenticate = "Basic";
     return(deliver);
   }
+  if (resp.status == 403) {
+    set resp.status = 403;
+    return(deliver);
+  }
 }

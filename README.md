@@ -312,4 +312,4 @@ default params values:
 
 ## Copyright Info
 
-Forked from the [wodby/varnish](https://github.com/wodby/varnish) image.
+Based on the [wodby/varnish](https://github.com/wodby/varnish) repo.

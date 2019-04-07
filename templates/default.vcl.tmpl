@@ -17,7 +17,7 @@ acl allowed_monitors {
 }
 
 sub vcl_recv {
-      if (req.http.CF-IPCountry) {
+    if (req.http.CF-IPCountry) {
         set req.http.X-Country-Code = req.http.CF-IPCountry;
     } elseif (req.http.X-Real-IP) {
         set req.http.X-Country-Code = geoip.country_code(req.http.X-Real-IP);
@@ -35,6 +35,7 @@ sub vcl_recv {
             set req.http.X-Currency = "EUR";
         }
     }
+
     if (req.http.X-Forwarded-For) {
         set req.http.X-Forwarded-For = req.http.X-Forwarded-For + ", " + client.ip;
     } else {
@@ -53,6 +54,8 @@ sub vcl_recv {
 include "includes/purge.vcl";
 include "includes/static.vcl";
 include "includes/mobile.vcl";
+
+# See https://book.varnish-software.com/4.0/chapters/VCL_Basics.html
 
 include "defaults/vcl_recv.vcl";
 
